@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DANIVIA TV – Panel de Control</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --blue: #00B4FF;
+    --navy: #0A0E1A;
+    --surface: #141B2D;
+    --card: #1A2540;
+    --accent: #00D4FF;
+  }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--navy); color: #fff; min-height: 100vh; }
+
+  /* Login */
+  #loginPage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+  }
+  .login-box {
+    background: var(--surface); border: 1px solid rgba(0,180,255,0.2);
+    border-radius: 16px; padding: 40px; width: 380px; text-align: center;
+  }
+  .login-box h1 { color: var(--blue); font-size: 28px; margin-bottom: 8px; }
+  .login-box p { color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+  .input-group { text-align: left; margin-bottom: 16px; }
+  .input-group label { display: block; color: var(--blue); font-size: 13px; margin-bottom: 6px; }
+  .input-group input {
+    width: 100%; background: var(--card); border: 1px solid rgba(0,180,255,0.2);
+    border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none;
+  }
+  .input-group input:focus { border-color: var(--blue); }
+  .btn {
+    width: 100%; background: var(--blue); color: #fff; border: none;
+    border-radius: 8px; padding: 12px; font-size: 15px; cursor: pointer;
+    font-weight: 600; transition: opacity .2s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-outline {
+    background: transparent; border: 1px solid var(--blue); color: var(--blue);
+  }
+  .btn-danger {
+    background: rgba(255,60,60,0.15); border: 1px solid rgba(255,60,60,0.4);
+    color: #ff4444; font-size: 13px; padding: 6px 12px; width: auto;
+  }
+
+  /* Panel */
+  #panelPage { display: none; }
+  header {
+    background: var(--surface); border-bottom: 1px solid rgba(0,180,255,0.15);
+    padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { color: var(--blue); font-size: 20px; }
+  .logout-btn {
+    background: none; border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.6); padding: 6px 14px; border-radius: 6px; cursor: pointer;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 28px; }
+  .section {
+    background: var(--surface); border-radius: 12px;
+    border: 1px solid rgba(0,180,255,0.1); padding: 24px; margin-bottom: 24px;
+  }
+  .section h2 { color: var(--blue); font-size: 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+
+  .dns-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .dns-item {
+    background: var(--card); border-radius: 8px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border: 1px solid rgba(0,180,255,0.1);
+  }
+  .dns-info { flex: 1; }
+  .dns-info .name { font-weight: 600; color: #fff; }
+  .dns-info .url { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .badge {
+    background: rgba(0,180,255,0.15); color: var(--blue);
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+  }
+
+  .add-form {
+    display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; align-items: end;
+    background: var(--card); border-radius: 8px; padding: 14px;
+  }
+  .add-form input {
+    background: var(--navy); border: 1px solid rgba(0,180,255,0.2);
+    border-radius: 6px; padding: 8px 12px; color: #fff; font-size: 13px; outline: none;
+  }
+  .add-form input:focus { border-color: var(--blue); }
+  .add-form label { font-size: 12px; color: var(--blue); display: block; margin-bottom: 4px; }
+  .btn-add {
+    background: var(--blue); border: none; color: #fff; border-radius: 6px;
+    padding: 8px 18px; cursor: pointer; font-weight: 600; white-space: nowrap; align-self: end;
+  }
+
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .config-field label { display: block; color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 6px; }
+  .config-field input {
+    width: 100%; background: var(--card); border: 1px solid rgba(0,180,255,0.2);
+    border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;
+  }
+  .config-field input:focus { border-color: var(--blue); }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--blue); color: #fff; padding: 12px 20px;
+    border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .3s;
+    pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+
+  .error-msg { color: #ff4444; font-size: 13px; margin-top: 8px; display: none; }
+
+  @media(max-width:600px) {
+    .add-form { grid-template-columns: 1fr; }
+    .config-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-box">
+    <h1>📺 DANIVIA TV</h1>
+    <p>Panel de administración</p>
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="admin@email.com">
+    </div>
+    <div class="input-group">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    <div class="error-msg" id="loginError">Credenciales incorrectas</div>
+    <button class="btn" style="margin-top:16px" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ══ PANEL ═══════════════════════════════════════════════════════════════ -->
+<div id="panelPage">
+  <header>
+    <h1>📺 DANIVIA TV · Panel de Control</h1>
+    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+  </header>
+
+  <div class="container">
+
+    <!-- DNS Servers -->
+    <div class="section">
+      <h2>🌐 Servidores DNS / IPTV</h2>
+      <div class="dns-list" id="dnsList"></div>
+      <div class="add-form">
+        <div>
+          <label>Nombre</label>
+          <input type="text" id="dnsName" placeholder="Servidor Principal">
+        </div>
+        <div>
+          <label>URL del servidor</label>
+          <input type="text" id="dnsUrl" placeholder="http://servidor:puerto">
+        </div>
+        <button class="btn-add" onclick="addDns()">+ Añadir</button>
+      </div>
+    </div>
+
+    <!-- App Config -->
+    <div class="section">
+      <h2>🎨 Configuración de la App</h2>
+      <div class="config-grid">
+        <div class="config-field">
+          <label>Nombre de la app</label>
+          <input type="text" id="cfgAppName" placeholder="DANIVIA TV">
+        </div>
+        <div class="config-field">
+          <label>Mensaje de bienvenida</label>
+          <input type="text" id="cfgWelcome" placeholder="Bienvenido">
+        </div>
+        <div class="config-field">
+          <label>URL del logo (imagen)</label>
+          <input type="text" id="cfgLogo" placeholder="https://...">
+        </div>
+        <div class="config-field">
+          <label>URL fondo de pantalla</label>
+          <input type="text" id="cfgBg" placeholder="https://...">
+        </div>
+      </div>
+      <button class="btn" style="margin-top:18px;width:auto;padding:10px 28px" onclick="saveConfig()">
+        Guardar configuración
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, getDoc, setDoc, addDoc,
+    onSnapshot, deleteDoc, updateDoc, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ╔══════════════════════════════════════════════════════╗
+  // ║  REEMPLAZA CON TU CONFIGURACIÓN DE FIREBASE         ║
+  // ╚══════════════════════════════════════════════════════╝
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJdFAadOPROKNB-DQ0Dnjl9UEBd-IBrRY",
+    authDomain: "danivia-tv-app.firebaseapp.com",
+    projectId: "danivia-tv-app",
+    storageBucket: "danivia-tv-app.firebasestorage.app",
+    messagingSenderId: "453340679449",
+    appId: "1:453340679449:web:63a9ce6c20e35710174988"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ── Auth ────────────────────────────────────────────────
+  onAuthStateChanged(auth, user => {
+    if (user) showPanel();
+    else showLogin();
+  });
+
+  window.doLogin = async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (e) {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  };
+
+  window.doLogout = () => signOut(auth);
+
+  // ── DNS ─────────────────────────────────────────────────
+  let dnsUnsub = null;
+
+  function listenDns() {
+    const q = query(collection(db, 'dns_list'));
+    dnsUnsub = onSnapshot(q, snap => {
+      const list = document.getElementById('dnsList');
+      list.innerHTML = '';
+      snap.forEach(doc => {
+        const d = doc.data();
+        const el = document.createElement('div');
+        el.className = 'dns-item';
+        el.innerHTML = `
+          <div class="dns-info">
+            <div class="name">${d.name}</div>
+            <div class="url">${d.url}</div>
+          </div>
+          <span class="badge">${d.active ? 'Activo' : 'Inactivo'}</span>
+          <button class="btn btn-danger" onclick="deleteDns('${doc.id}')">Eliminar</button>
+        `;
+        list.appendChild(el);
+      });
+    });
+  }
+
+  window.addDns = async () => {
+    const name = document.getElementById('dnsName').value.trim();
+    const url = document.getElementById('dnsUrl').value.trim();
+    if (!name || !url) return showToast('Rellena nombre y URL');
+    await addDoc(collection(db, 'dns_list'), { name, url, active: true });
+    document.getElementById('dnsName').value = '';
+    document.getElementById('dnsUrl').value = '';
+    showToast('Servidor añadido ✓');
+  };
+
+  window.deleteDns = async (id) => {
+    if (!confirm('¿Eliminar este servidor?')) return;
+    await deleteDoc(doc(db, 'dns_list', id));
+    showToast('Servidor eliminado');
+  };
+
+  // ── App Config ──────────────────────────────────────────
+  async function loadConfig() {
+    const snap = await getDoc(doc(db, 'app_config', 'main'));
+    if (snap.exists()) {
+      const d = snap.data();
+      document.getElementById('cfgAppName').value = d.appName || '';
+      document.getElementById('cfgWelcome').value = d.welcomeMessage || '';
+      document.getElementById('cfgLogo').value = d.logoUrl || '';
+      document.getElementById('cfgBg').value = d.backgroundUrl || '';
+    }
+  }
+
+  window.saveConfig = async () => {
+    await setDoc(doc(db, 'app_config', 'main'), {
+      appName: document.getElementById('cfgAppName').value.trim(),
+      welcomeMessage: document.getElementById('cfgWelcome').value.trim(),
+      logoUrl: document.getElementById('cfgLogo').value.trim(),
+      backgroundUrl: document.getElementById('cfgBg').value.trim()
+    });
+    showToast('Configuración guardada ✓');
+  };
+
+  // ── UI helpers ──────────────────────────────────────────
+  function showPanel() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('panelPage').style.display = 'block';
+    listenDns();
+    loadConfig();
+  }
+
+  function showLogin() {
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('panelPage').style.display = 'none';
+    if (dnsUnsub) dnsUnsub();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // Enter en login
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doLogin();
+  });
+</script>
+</body>
+</html>
